@@ -40,8 +40,9 @@ jobs:
         env:
           REGION: ${{ inputs.region }}
           ENVIRONMENT: ${{ inputs.environment }}
+        working-directory: ./a360-cdk
         run: |
-          export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
+          # export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
           npm i -g aws-cdk@2.139.1
           cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
           # cdk diff -c env=$ENVIRONMENT -c region=$REGION
