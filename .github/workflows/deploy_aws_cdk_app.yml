@@ -17,7 +17,7 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    # These permissions are needed to interact with GitHub"s OIDC Token endpoint.
     permissions:
       id-token: write
       contents: read
@@ -36,14 +36,20 @@ jobs:
         with:
           node-version: "18"
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
       - name: Deploy CDK App
         env:
           REGION: ${{ inputs.region }}
           ENVIRONMENT: ${{ inputs.environment }}
         working-directory: ./a360-cdk
         run: |
-          # export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
           npm i -g aws-cdk@2.139.1
+          pip3 install -r requirements.txt
           cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
           # cdk diff -c env=$ENVIRONMENT -c region=$REGION
           # cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
