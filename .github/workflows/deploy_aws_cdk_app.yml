@@ -42,8 +42,7 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
         run: |
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
-          echo $CDK_DEFAULT_ACCOUNT
-          # npm i -g aws-cdk@2.139.1
-          # cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
+          npm i -g aws-cdk@2.139.1
+          cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
           # cdk diff -c env=$ENVIRONMENT -c region=$REGION
           # cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
