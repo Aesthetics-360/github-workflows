@@ -38,10 +38,13 @@ jobs:
 
       - name: Deploy CDK App
         env:
+          OIDC_ROLE: ${{ inputs.oidc_role }}
           REGION: ${{ inputs.region }}
           ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          npm i -g aws-cdk@2.139.1
-          cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
+          export ACCOUNT=$(cut -d':' -f4 <<< $OIDC_ROLE)
+          echo $ACCOUNT
+          # npm i -g aws-cdk@2.139.1
+          # cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
           # cdk diff -c env=$ENVIRONMENT -c region=$REGION
           # cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
