@@ -52,5 +52,5 @@ jobs:
           npm i -g aws-cdk@2.139.1
           pip3 install -r requirements.txt
           cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
-          # cdk diff -c env=$ENVIRONMENT -c region=$REGION
-          # cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
+          cdk diff -c env=$ENVIRONMENT -c region=$REGION
+          cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
