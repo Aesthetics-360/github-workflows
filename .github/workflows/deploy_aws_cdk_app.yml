@@ -38,11 +38,10 @@ jobs:
 
       - name: Deploy CDK App
         env:
-          OIDC_ROLE: ${{ inputs.oidc_role }}
           REGION: ${{ inputs.region }}
           ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          export CDK_DEFAULT_ACCOUNT=$(cut -d':' -f4 <<< $OIDC_ROLE)
+          export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
           echo $CDK_DEFAULT_ACCOUNT
           # npm i -g aws-cdk@2.139.1
           # cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
