@@ -33,7 +33,7 @@ jobs:
           if [ ! -f ./liquibase/liquibase ]
           then
             echo "Downloading liquibase..."
-            curl -L https://github.com/liquibase/liquibase/releases/download/v4.21.1/liquibase-4.27.0.zip --output liquibase.zip
+            curl -L https://github.com/liquibase/liquibase/releases/download/v4.27.0/liquibase-4.27.0.zip --output liquibase.zip
             unzip -o -d liquibase liquibase.zip
             rm -f liquibase.zip
           fi
