@@ -57,7 +57,7 @@ jobs:
           PG_HOST=$(echo $DB_SECRET_VALUE | jq -r '.endpoint')
           PG_PORT=$(echo $DB_SECRET_VALUE | jq -r '.port')
 
-          # fill in the blank in liquibase.rds.properties file
+          # fill in the blank in the properties file
           sed -e "s|%PG_HOST|$PG_HOST|g" $PROPERTIES_PATH >> "$PROPERTIES_PATH.temp"
           cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
           rm "$PROPERTIES_PATH.temp"
@@ -78,5 +78,5 @@ jobs:
           cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
           rm "$PROPERTIES_PATH.temp"
           
-          ./liquibase/liquibase status --defaultsFile=liquibase.rds.properties --contexts=${{ inputs.environment }}
-          ./liquibase/liquibase update --defaultsFile=liquibase.rds.properties --contexts=${{ inputs.environment }}
+          ./liquibase/liquibase status --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
+          ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
