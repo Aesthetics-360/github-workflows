@@ -79,4 +79,4 @@ jobs:
           rm "$PROPERTIES_PATH.temp"
           
           ./liquibase/liquibase status --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
-          # ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
+          ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
