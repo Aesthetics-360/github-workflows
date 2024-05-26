@@ -1,0 +1,82 @@
+name: Execute Liquibase Update
+
+on:
+  workflow_call:
+    inputs:
+      region:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      cluster_config_secret_name:
+        required: true
+        type: string
+      cluster_credentials_secret_name:
+        required: true
+        type: string
+      db_name:
+        required: true
+        type: string
+
+jobs:
+  liquibase:
+    name: Execute Liquibase Update
+    runs-on: [self-hosted, '${{ inputs.environment }}']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Install Liquibase Library
+        run: |
+          set -e
+          if [ ! -f ./liquibase/liquibase ]
+          then
+            echo "Downloading liquibase..."
+            curl -L https://github.com/liquibase/liquibase/releases/download/v4.27.0/liquibase-4.27.0.zip --output liquibase.zip
+            unzip -o -d liquibase liquibase.zip
+            rm -f liquibase.zip
+          fi
+      
+      - name: Run Liquibase
+        env:
+          AWS_REGION: ${{ inputs.region }}
+          CLUSTER_CONFIG_SECRET_NAME: ${{ inputs.cluster_config_secret_name }}
+          CLUSTER_CREDENTIALS_SECRET_NAME: ${{ inputs.cluster_credentials_secret_name }}
+          PG_DATABASE: ${{ inputs.db_name }}
+        run: |
+          set -e
+          PROPERTIES_PATH=liquibase.rds.properties
+
+          # get connection url details from AWS secrets
+          DB_SECRET_VALUE=$(aws secretsmanager get-secret-value --region $AWS_REGION --secret-id $CLUSTER_CREDENTIALS_SECRET_NAME | jq -r '.SecretString')
+          PG_USERNAME=$(echo $DB_SECRET_VALUE | jq -r '.username')
+          PG_PASSWORD=$(echo $DB_SECRET_VALUE | jq -r '.password')
+          
+          DB_SECRET_VALUE=$(aws secretsmanager get-secret-value --region $AWS_REGION --secret-id $CLUSTER_CONFIG_SECRET_NAME | jq -r '.SecretString')
+          PG_HOST=$(echo $DB_SECRET_VALUE | jq -r '.endpoint')
+          PG_PORT=$(echo $DB_SECRET_VALUE | jq -r '.port')
+
+          # fill in the blank in the properties file
+          sed -e "s|%PG_HOST|$PG_HOST|g" $PROPERTIES_PATH >> "$PROPERTIES_PATH.temp"
+          cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
+          rm "$PROPERTIES_PATH.temp"
+
+          sed -e "s|%PG_PORT|$PG_PORT|g" $PROPERTIES_PATH >> "$PROPERTIES_PATH.temp"
+          cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
+          rm "$PROPERTIES_PATH.temp"
+
+          sed -e "s|%PG_USERNAME|$PG_USERNAME|g" $PROPERTIES_PATH >> "$PROPERTIES_PATH.temp"
+          cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
+          rm "$PROPERTIES_PATH.temp"
+
+          sed -e "s|%PG_PASSWORD|$PG_PASSWORD|g" $PROPERTIES_PATH >> "$PROPERTIES_PATH.temp"
+          cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
+          rm "$PROPERTIES_PATH.temp"
+
+          sed -e "s|%PG_DATABASE|$PG_DATABASE|g" $PROPERTIES_PATH >> "$PROPERTIES_PATH.temp"
+          cp "$PROPERTIES_PATH.temp" $PROPERTIES_PATH
+          rm "$PROPERTIES_PATH.temp"
+          
+          ./liquibase/liquibase status --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
+          ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
