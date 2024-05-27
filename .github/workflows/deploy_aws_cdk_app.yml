@@ -12,6 +12,9 @@ on:
       environment:
         required: true
         type: string
+      project_dir_path:
+        required: true
+        type: string
 
 jobs:
   deploy:
@@ -46,7 +49,7 @@ jobs:
         env:
           REGION: ${{ inputs.region }}
           ENVIRONMENT: ${{ inputs.environment }}
-        working-directory: ./a360-cdk
+        working-directory: ${{ inputs.project_dir_path }}
         run: |
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
           npm i -g aws-cdk@2.139.1
