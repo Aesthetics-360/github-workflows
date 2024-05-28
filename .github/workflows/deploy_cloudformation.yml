@@ -39,17 +39,16 @@ jobs:
                 role-to-assume: ${{ inputs.oidc_role }}
                 aws-region: ${{ inputs.region }}
 
-            - name: Install AWS CLI
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y awscli
-
             - name: Deploy CloudFormation stack
               env:
                 STACK_NAME: ${{ inputs.stack_name }}
                 TEMPLATE_FILE: ${{ inputs.template_file }}
+                ENVIRONMENT: ${{ inputs.environment }}
               run: |
+                ls
+                pwd
                 aws cloudformation deploy \
                     --stack-name $STACK_NAME \
                     --template-file $TEMPLATE_FILE \
+                    --parameter-overrides Environment=$ENVIRONMENT \
                     --capabilities CAPABILITY_NAMED_IAM
