@@ -48,10 +48,6 @@ jobs:
       #     python-version: "3.9"
       #     cache: "pip"
 
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.CORE_REPO_SSH_KEY }}
-          
       - name: Deploy CDK App
         env:
           REGION: ${{ inputs.region }}
@@ -62,8 +58,7 @@ jobs:
           then
             eval `ssh-agent -s`
             # echo "${{ secrets.CORE_REPO_SSH_KEY }}" | tr -d '\r' | ssh-add -
-            echo -e "$secrets.CORE_REPO_SSH_KEY" | ssh-add -
-            # ssh-add - <<< '${{ secrets.CORE_REPO_SSH_KEY }}'
+            ssh-add - <<< "${{ secrets.CORE_REPO_SSH_KEY }}"
             git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > example.yaml
             ls -al
           fi
