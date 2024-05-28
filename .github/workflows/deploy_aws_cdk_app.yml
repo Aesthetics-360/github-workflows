@@ -56,13 +56,9 @@ jobs:
         run: |
           if [ "${{ inputs.checkout_openapi_yaml }}" = true ]
           then
-            mkdir -p /home/runner/.ssh
-            echo -e "$secrets.CORE_REPO_SSH_KEY" > /home/runner/.ssh/github_actions
-            chmod 600 /home/runner/.ssh/github_actions
             eval `ssh-agent -s`
-            ssh-add /home/runner/.ssh/github_actions
             # echo "${{ secrets.CORE_REPO_SSH_KEY }}" | tr -d '\r' | ssh-add -
-            # echo "${{ secrets.CORE_REPO_SSH_KEY }}" | ssh-add -
+            echo -e "$secrets.CORE_REPO_SSH_KEY" | ssh-add -
             # ssh-add - <<< '${{ secrets.CORE_REPO_SSH_KEY }}'
             git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > example.yaml
             ls -al
