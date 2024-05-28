@@ -57,7 +57,7 @@ jobs:
           if [ "${{ inputs.checkout_openapi_yaml }}" = true ]
           then
             mkdir -p /home/runner/.ssh
-            echo -e "${{ secrets.CORE_REPO_SSH_KEY }}" > /home/runner/.ssh/github_actions
+            echo -e "$secrets.CORE_REPO_SSH_KEY" > /home/runner/.ssh/github_actions
             chmod 600 /home/runner/.ssh/github_actions
             eval `ssh-agent -s`
             ssh-add /home/runner/.ssh/github_actions
