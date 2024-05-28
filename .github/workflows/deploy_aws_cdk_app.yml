@@ -57,7 +57,6 @@ jobs:
           if [ "${{ inputs.checkout_openapi_yaml }}" = true ]
           then
             eval `ssh-agent -s`
-            # echo "${{ secrets.CORE_REPO_SSH_KEY }}" | tr -d '\r' | ssh-add -
             ssh-add - <<< "${{ secrets.CORE_REPO_SSH_KEY }}"
             git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > example.yaml
             ls -al
