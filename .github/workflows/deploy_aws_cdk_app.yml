@@ -31,22 +31,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ inputs.oidc_role }}
-          aws-region: ${{ inputs.region }}
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     role-to-assume: ${{ inputs.oidc_role }}
+      #     aws-region: ${{ inputs.region }}
 
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
+      # - name: Set up Node
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "18"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          cache: "pip"
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.9"
+      #     cache: "pip"
 
       - name: Deploy CDK App
         env:
@@ -56,17 +56,21 @@ jobs:
         run: |
           if [ "${{ inputs.checkout_openapi_yaml }}" = true ]
           then
+            mkdir -p /home/runner/.ssh
+            echo -e "${{ secrets.CORE_REPO_SSH_KEY }}" > /home/runner/.ssh/github_actions
+            chmod 600 /home/runner/.ssh/github_actions
             eval `ssh-agent -s`
+            ssh-add /home/runner/.ssh/github_actions
             # echo "${{ secrets.CORE_REPO_SSH_KEY }}" | tr -d '\r' | ssh-add -
-            echo "${{ secrets.CORE_REPO_SSH_KEY }}" | ssh-add -
+            # echo "${{ secrets.CORE_REPO_SSH_KEY }}" | ssh-add -
             # ssh-add - <<< '${{ secrets.CORE_REPO_SSH_KEY }}'
             git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > example.yaml
             ls -al
           fi
 
-          export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
-          npm i -g aws-cdk@2.139.1
-          pip3 install -r requirements.txt
-          cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
-          cdk diff -c env=$ENVIRONMENT -c region=$REGION
-          cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
+          # export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
+          # npm i -g aws-cdk@2.139.1
+          # pip3 install -r requirements.txt
+          # cdk bootstrap -c env=$ENVIRONMENT -c region=$REGION
+          # cdk diff -c env=$ENVIRONMENT -c region=$REGION
+          # cdk deploy --all --require-approval=never -c env=$ENVIRONMENT -c region=$REGION
