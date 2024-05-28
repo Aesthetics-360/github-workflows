@@ -58,7 +58,7 @@ jobs:
           then
             eval `ssh-agent -s`
             ssh-add - <<< "${{ secrets.CORE_REPO_SSH_KEY }}"
-            git clone git@github.com:Aesthetics-360/A360-Core-App.git
+            git clone -b openApi git@github.com:Aesthetics-360/A360-Core-App.git
             ls -al
           fi
 
