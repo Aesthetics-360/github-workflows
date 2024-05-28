@@ -15,6 +15,9 @@ on:
       project_dir_path:
         required: true
         type: string
+      checkout_openapi_yaml:
+        required: false
+        type: boolean
 
 jobs:
   deploy:
@@ -51,6 +54,13 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
         working-directory: ${{ inputs.project_dir_path }}
         run: |
+          if [ -z "${{ inputs.checkout_openapi_yaml }}" ]
+          then
+            eval `ssh-agent -s`
+            ssh-add - <<< '${{ secrets.CORE_REPO_SSH_KEY }}'
+            git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > ${{ inputs.project_dir_path }}/example.yaml
+          fi
+
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
           npm i -g aws-cdk@2.139.1
           pip3 install -r requirements.txt
