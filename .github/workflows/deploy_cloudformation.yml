@@ -44,6 +44,7 @@ jobs:
                 STACK_NAME: ${{ inputs.stack_name }}
                 TEMPLATE_FILE: ${{ inputs.template_file }}
                 ENVIRONMENT: ${{ inputs.environment }}
+              working-directory: ${{ inputs.project_dir_path }}
               run: |
                 ls
                 pwd
