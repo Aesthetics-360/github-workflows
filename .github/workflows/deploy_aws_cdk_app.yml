@@ -58,7 +58,7 @@ jobs:
           then
             eval `ssh-agent -s`
             ssh-add - <<< '${{ secrets.CORE_REPO_SSH_KEY }}'
-            git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > ${{ inputs.project_dir_path }}/example.yaml
+            git archive --remote=ssh://git@github.com:Aesthetics-360/A360-Core-App.git openApi A360CoreApi_openapi.yaml | tar -xO A360CoreApi_openapi.yaml > example.yaml
           fi
 
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
