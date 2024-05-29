@@ -15,6 +15,15 @@ on:
       project_dir_path:
         required: true
         type: string
+      checkout_openapi_yaml:
+        required: false
+        type: boolean
+      target_repository:
+        required: false
+        type: string
+      target_branch:
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -51,6 +60,13 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
         working-directory: ${{ inputs.project_dir_path }}
         run: |
+          if [ "${{ inputs.checkout_openapi_yaml }}" = true ]
+          then
+            eval `ssh-agent -s`
+            ssh-add - <<< "${{ secrets.CORE_REPO_SSH_KEY }}"
+            git clone -b "${{ inputs.target_branch }}" git@github.com:"${{ inputs.target_repository }}".git
+          fi
+
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
           npm i -g aws-cdk@2.139.1
           pip3 install -r requirements.txt
