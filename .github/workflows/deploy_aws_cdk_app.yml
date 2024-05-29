@@ -64,7 +64,7 @@ jobs:
           then
             eval `ssh-agent -s`
             ssh-add - <<< "${{ secrets.CORE_REPO_SSH_KEY }}"
-            git clone -b "${{ inputs.target_repository }}" git@github.com:"${{ inputs.target_branch }}".git
+            git clone -b "${{ inputs.target_branch }}" git@github.com:"${{ inputs.target_repository }}".git
           fi
 
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
