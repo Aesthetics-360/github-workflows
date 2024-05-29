@@ -47,8 +47,8 @@ jobs:
         working-directory: ${{ inputs.project_dir_path }}
         run: |
           aws cloudformation deploy \
+              --debug true \
               --stack-name $STACK_NAME \
               --template-file $TEMPLATE_FILE \
               --parameter-overrides Environment=$ENVIRONMENT \
-              --capabilities CAPABILITY_NAMED_IAM \
-              --debug true
+              --capabilities CAPABILITY_NAMED_IAM
