@@ -1,55 +1,54 @@
-name: Deploy AWS Cloudformation Tempplates to AWS 
+name: Deploy AWS Cloudformation Tempplates to AWS
 
-on: 
-    workflow_call:
-        inputs:
-            region:
-              required: true
-              type: string
-            oidc_role:
-              required: true
-              type: string
-            environment:
-              required: true
-              type: string
-            project_dir_path:
-              required: true
-              type: string
-            stack_name:
-              required: true
-              type: string
-            template_file:
-              required: true
-              type: string
+on:
+  workflow_call:
+    inputs:
+      region:
+        required: true
+        type: string
+      oidc_role:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      project_dir_path:
+        required: true
+        type: string
+      stack_name:
+        required: true
+        type: string
+      template_file:
+        required: true
+        type: string
 
 jobs:
-    deploy:
-        name: Deploy
-        runs-on: ubuntu-latest
-        permissions:
-            id-token: write
-            contents: read
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v2
-              with: 
-                role-to-assume: ${{ inputs.oidc_role }}
-                aws-region: ${{ inputs.region }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.oidc_role }}
+          aws-region: ${{ inputs.region }}
 
-            - name: Deploy CloudFormation stack
-              env:
-                STACK_NAME: ${{ inputs.stack_name }}
-                TEMPLATE_FILE: ${{ inputs.template_file }}
-                ENVIRONMENT: ${{ inputs.environment }}
-              working-directory: ${{ inputs.project_dir_path }}
-              run: |
-                ls
-                pwd
-                aws cloudformation deploy \
-                    --stack-name $STACK_NAME \
-                    --template-file $TEMPLATE_FILE \
-                    --parameter-overrides Environment=$ENVIRONMENT \
-                    --capabilities CAPABILITY_NAMED_IAM
+      - name: Deploy CloudFormation stack
+        env:
+          STACK_NAME: ${{ inputs.stack_name }}
+          TEMPLATE_FILE: ${{ inputs.template_file }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        working-directory: ${{ inputs.project_dir_path }}
+        run: |
+          aws cloudformation deploy \
+              --stack-name $STACK_NAME \
+              --template-file $TEMPLATE_FILE \
+              --parameter-overrides Environment=$ENVIRONMENT \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --debug true
