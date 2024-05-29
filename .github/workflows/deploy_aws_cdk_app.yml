@@ -18,6 +18,12 @@ on:
       checkout_openapi_yaml:
         required: false
         type: boolean
+      target_repository:
+        required: false
+        type: string
+      target_branch:
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -58,8 +64,7 @@ jobs:
           then
             eval `ssh-agent -s`
             ssh-add - <<< "${{ secrets.CORE_REPO_SSH_KEY }}"
-            git clone -b openApi git@github.com:Aesthetics-360/A360-Core-App.git
-            ls -al
+            git clone -b "${{ inputs.target_repository }}" git@github.com:"${{ inputs.target_branch }}".git
           fi
 
           export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity | jq -r .Account)
