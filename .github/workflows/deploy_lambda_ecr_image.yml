@@ -62,7 +62,7 @@ jobs:
 
           # Check if an image with the APP_VERSION tag already exists in the repository
           IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME"
-          IMAGE_EXISTS=$(aws ecr batch-get-image --repository-name=$REPOSITORY_NAME --image-id=imageTag=$APP_VERSION --region "$REGION" --query 'images[].imageId.imageTag' --output json)
+          IMAGE_EXISTS=$(aws ecr batch-get-image --repository-name=$ECR_REPOSITORY_NAME --image-id=imageTag=$APP_VERSION --region "$REGION" --query 'images[].imageId.imageTag' --output json)
 
           if [ -z "$IMAGE_EXISTS" ] || [ "$IMAGE_EXISTS" == "[]" ]; then
             echo "Image with version $APP_VERSION does not exist. Proceeding to build and push."
