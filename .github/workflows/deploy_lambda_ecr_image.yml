@@ -61,6 +61,7 @@ jobs:
           # Check if an image with the APP_VERSION tag already exists in the repository
           IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME"
           IMAGE_EXISTS=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --region "$REGION" 2>&1)
+          echo "what?"
 
           cd $LAMBDA_PROJECT_PATH
 
