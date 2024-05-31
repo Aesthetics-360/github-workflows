@@ -55,16 +55,16 @@ jobs:
             exit 1
           fi
 
+          cd $LAMBDA_PROJECT_PATH
+          
           # Authenticate Docker to the ECR Registry
           aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
           # Check if an image with the APP_VERSION tag already exists in the repository
           IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME"
-          IMAGE_EXISTS=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --region "$REGION" 2>&1)
+          IMAGE_EXISTS=$(aws ecr batch-get-image --repository-name=$ECR_REPOSITORY_NAME --image-id=imageTag=$APP_VERSION --region "$REGION" --query 'images[].imageId.imageTag' --output json)
 
-          pushd $LAMBDA_PROJECT_PATH
-
-          if [[ $IMAGE_EXISTS == *"ImageNotFoundException"* ]]; then
+          if [ -z "$IMAGE_EXISTS" ] || [ "$IMAGE_EXISTS" == "[]" ]; then
             echo "Image with version $APP_VERSION does not exist. Proceeding to build and push."
             # Build the Docker image
             docker build -t "${IMAGE_URI}:latest" -t "${IMAGE_URI}:${APP_VERSION}" .
