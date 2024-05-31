@@ -70,8 +70,9 @@ jobs:
             docker build -t "${IMAGE_URI}:latest" -t "${IMAGE_URI}:${APP_VERSION}" .
 
             # Push the images to ECR
-            docker push "${IMAGE_URI}:latest"
             docker push "${IMAGE_URI}:${APP_VERSION}"
+            aws ecr batch-delete-image --repository-name $ECR_REPOSITORY_NAME --image-ids imageTag=latest
+            docker push "${IMAGE_URI}:latest"
 
             echo "Docker images pushed to ECR: ${IMAGE_URI}:latest and ${IMAGE_URI}:${APP_VERSION}"
           else
@@ -79,18 +80,7 @@ jobs:
 
             # Pull the existing APP_VERSION image
             docker pull "${IMAGE_URI}:${APP_VERSION}"
-
-            # Check if 'latest' tag needs updating
-            LATEST_DIGEST=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="latest" --query 'imageDetails[0].imageDigest' --output text --region "$REGION")
-            VERSION_DIGEST=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --query 'imageDetails[0].imageDigest' --output text --region "$REGION")
-
-            if [ "$LATEST_DIGEST" != "$VERSION_DIGEST" ]; then
-              echo "Updating 'latest' tag to match version $APP_VERSION."
-
-              # Retag and push
-              docker tag "${IMAGE_URI}:${APP_VERSION}" "${IMAGE_URI}:latest"
-              docker push "${IMAGE_URI}:latest"
-            else
-              echo "'latest' tag is already up-to-date with version $APP_VERSION."
-            fi
+            docker tag "${IMAGE_URI}:${APP_VERSION}" "${IMAGE_URI}:latest"
+            aws ecr batch-delete-image --repository-name $ECR_REPOSITORY_NAME --image-ids imageTag=latest
+            docker push "${IMAGE_URI}:latest"
           fi
