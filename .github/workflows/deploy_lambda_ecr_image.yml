@@ -65,8 +65,6 @@ jobs:
           IMAGE_EXISTS=$(aws ecr batch-get-image --repository-name "$REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --region "$REGION" --query 'images' --output json)
 
           if [ -z "$IMAGE_EXISTS" ] || [ "$IMAGE_EXISTS" == "[]" ]; then
-
-          if [[ $IMAGE_EXISTS == *"ImageNotFoundException"* ]]; then
             echo "Image with version $APP_VERSION does not exist. Proceeding to build and push."
             # Build the Docker image
             docker build -t "${IMAGE_URI}:latest" -t "${IMAGE_URI}:${APP_VERSION}" .
