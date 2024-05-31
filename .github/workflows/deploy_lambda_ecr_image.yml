@@ -62,7 +62,7 @@ jobs:
           IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME"
           IMAGE_EXISTS=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --region "$REGION" 2>&1)
 
-          pushd $LAMBDA_PROJECT_PATH
+          cd $LAMBDA_PROJECT_PATH
 
           if [[ $IMAGE_EXISTS == *"ImageNotFoundException"* ]]; then
             echo "Image with version $APP_VERSION does not exist. Proceeding to build and push."
