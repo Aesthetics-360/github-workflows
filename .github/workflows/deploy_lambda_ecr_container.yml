@@ -1,0 +1,98 @@
+name: Build and Push Lambda Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      region:
+        required: true
+        type: string
+      oidc_role:
+        required: true
+        type: string
+      ecr_repo_name:
+        required: true
+        type: string
+      open_api_yaml_path:
+        required: true
+        type: string
+      project_path:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.oidc_role }}
+          aws-region: ${{ inputs.region }}
+
+      - name: Push Docker Image
+        env:
+          ECR_REPOSITORY_NAME: ${{ inputs.ecr_repo_name }}
+          REGION: ${{ inputs.region }}
+          OPEN_API_YAML_PATH: ${{ inputs.open_api_yaml_path }}
+          LAMBDA_PROJECT_PATH: ${{ inputs.project_path }}
+        run: |
+          #!/bin/bash
+
+          # Variables
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+
+          # Extract version from the YAML file
+          APP_VERSION=$(yq e '.info.version' "$OPEN_API_YAML_PATH")
+
+          # Validate APP_VERSION
+          if [ -z "$APP_VERSION" ]; then
+            echo "Version could not be extracted from the YAML file."
+            exit 1
+          fi
+
+          # Authenticate Docker to the ECR Registry
+          aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+
+          # Check if an image with the APP_VERSION tag already exists in the repository
+          IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME"
+          IMAGE_EXISTS=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --region "$REGION" 2>&1)
+
+          pushd $LAMBDA_PROJECT_PATH
+
+          if [[ $IMAGE_EXISTS == *"ImageNotFoundException"* ]]; then
+            echo "Image with version $APP_VERSION does not exist. Proceeding to build and push."
+            # Build the Docker image
+            docker build -t "${IMAGE_URI}:latest" -t "${IMAGE_URI}:${APP_VERSION}" .
+
+            # Push the images to ECR
+            docker push "${IMAGE_URI}:latest"
+            docker push "${IMAGE_URI}:${APP_VERSION}"
+
+            echo "Docker images pushed to ECR: ${IMAGE_URI}:latest and ${IMAGE_URI}:${APP_VERSION}"
+          else
+            echo "Image with version $APP_VERSION already exists. Managing 'latest' tag."
+
+            # Pull the existing APP_VERSION image
+            docker pull "${IMAGE_URI}:${APP_VERSION}"
+
+            # Check if 'latest' tag needs updating
+            LATEST_DIGEST=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="latest" --query 'imageDetails[0].imageDigest' --output text --region "$REGION")
+            VERSION_DIGEST=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY_NAME" --image-ids imageTag="$APP_VERSION" --query 'imageDetails[0].imageDigest' --output text --region "$REGION")
+
+            if [ "$LATEST_DIGEST" != "$VERSION_DIGEST" ]; then
+              echo "Updating 'latest' tag to match version $APP_VERSION."
+
+              # Retag and push
+              docker tag "${IMAGE_URI}:${APP_VERSION}" "${IMAGE_URI}:latest"
+              docker push "${IMAGE_URI}:latest"
+            else
+              echo "'latest' tag is already up-to-date with version $APP_VERSION."
+            fi
+          fi
