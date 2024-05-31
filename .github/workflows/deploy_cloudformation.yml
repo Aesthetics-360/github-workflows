@@ -9,9 +9,6 @@ on:
       oidc_role:
         required: true
         type: string
-      environment:
-        required: true
-        type: string
       project_dir_path:
         required: true
         type: string
@@ -19,6 +16,9 @@ on:
         required: true
         type: string
       template_file:
+        required: true
+        type: string
+      parameter_overrides:
         required: true
         type: string
 
@@ -43,11 +43,11 @@ jobs:
         env:
           STACK_NAME: ${{ inputs.stack_name }}
           TEMPLATE_FILE: ${{ inputs.template_file }}
-          ENVIRONMENT: ${{ inputs.environment }}
+          PARAMETER_OVERRIDES: ${{ inputs.parameter_overrides }}
         working-directory: ${{ inputs.project_dir_path }}
         run: |
           aws cloudformation deploy \
               --stack-name $STACK_NAME \
               --template-file $TEMPLATE_FILE \
-              --parameter-overrides Environment=$ENVIRONMENT \
+              --parameter-overrides $PARAMETER_OVERRIDES \
               --capabilities CAPABILITY_NAMED_IAM
