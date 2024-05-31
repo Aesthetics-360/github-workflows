@@ -43,8 +43,6 @@ jobs:
           OPEN_API_YAML_PATH: ${{ inputs.open_api_yaml_path }}
           LAMBDA_PROJECT_PATH: ${{ inputs.project_path }}
         run: |
-          #!/bin/bash
-
           # Variables
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 
