@@ -1,0 +1,72 @@
+name: Verify App Version Update
+
+on:
+  workflow_call:
+    inputs:
+      enable_job:
+        required: true
+        type: boolean
+      region:
+        required: true
+        type: string
+      oidc_role:
+        required: true
+        type: string
+      ecr_repo_name:
+        required: true
+        type: string
+      open_api_yaml_path:
+        required: true
+        type: string
+
+jobs:
+  verify_version_update:
+    name: Verify App Version Update
+    if: ${{ inputs.enable_job }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.oidc_role }}
+          aws-region: ${{ inputs.region }}
+
+      - name: Push Docker Image
+        env:
+          REGION: ${{ inputs.region }}
+          ECR_REPOSITORY_NAME: ${{ inputs.ecr_repo_name }}
+          OPEN_API_YAML_PATH: ${{ inputs.open_api_yaml_path }}
+        run: |
+          # Variables
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+
+          # Extract version from the YAML file
+          APP_VERSION=$(yq e '.info.version' "$OPEN_API_YAML_PATH")
+
+          # Validate APP_VERSION
+          if [ -z "$APP_VERSION" ]; then
+            echo "Version could not be extracted from the YAML file."
+            exit 1
+          fi
+
+          # Authenticate Docker to the ECR Registry
+          aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+
+          # Check if an image with the APP_VERSION tag already exists in the repository
+          IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME"
+          IMAGE_EXISTS=$(aws ecr batch-get-image --repository-name=$ECR_REPOSITORY_NAME --image-id=imageTag=$APP_VERSION --region "$REGION" --query 'images[].imageId.imageTag' --output json)
+
+          if [ -z "$IMAGE_EXISTS" ] || [ "$IMAGE_EXISTS" == "[]" ]; then
+            echo "Image with version $APP_VERSION does not exist in ECR. Proceeding to following jobs."
+          else
+            echo "Image with version $APP_VERSION already exists. Update openapi schema version to prevent conflict in live environment"
+            exit 1
+          fi
