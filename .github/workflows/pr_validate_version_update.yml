@@ -37,7 +37,7 @@ jobs:
           role-to-assume: ${{ inputs.oidc_role }}
           aws-region: ${{ inputs.region }}
 
-      - name: Push Docker Image
+      - name: Check Version
         env:
           REGION: ${{ inputs.region }}
           ECR_REPOSITORY_NAME: ${{ inputs.ecr_repo_name }}
