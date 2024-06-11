@@ -1,4 +1,4 @@
-name: Deploy AWS Cloudformation Tempplates to AWS
+name: Deploy AWS Cloudformation Templates to AWS
 
 on:
   workflow_call:
@@ -49,6 +49,9 @@ jobs:
           PARAMETER_OVERRIDES: ${{ inputs.parameter_overrides }}
         working-directory: ${{ inputs.project_dir_path }}
         run: |
+          ls
+          pwd
+          echo hello world
           aws cloudformation deploy \
               --stack-name $STACK_NAME \
               --template-file $TEMPLATE_FILE \
