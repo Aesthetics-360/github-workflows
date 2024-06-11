@@ -21,6 +21,9 @@ on:
       parameter_overrides:
         required: true
         type: string
+      environment:
+        required: true
+        type: string
 
 jobs:
   deploy:
