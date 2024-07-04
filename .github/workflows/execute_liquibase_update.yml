@@ -81,3 +81,4 @@ jobs:
           ./liquibase/liquibase clearCheckSums --defaultsFile=$PROPERTIES_PATH
           ./liquibase/liquibase status --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
           ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
+          ./liquibase/liquibase listTables --defaultsFile=$PROPERTIES_PATH
