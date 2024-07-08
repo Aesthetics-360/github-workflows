@@ -80,5 +80,5 @@ jobs:
 
           ./liquibase/liquibase clearCheckSums --defaultsFile=$PROPERTIES_PATH
           ./liquibase/liquibase status --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }}
-          ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --contexts=${{ inputs.environment }} --logLevel=debug
+          ./liquibase/liquibase update --defaultsFile=$PROPERTIES_PATH --default-schema-name=Public --contexts=${{ inputs.environment }} --logLevel=debug
           ./liquibase/liquibase snapshot --defaultsFile=$PROPERTIES_PATH
